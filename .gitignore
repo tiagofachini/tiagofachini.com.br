@@ -1,0 +1,22 @@
+# WordPress secrets — never commit
+wp-config.php
+
+# User uploads / media (large, not code — deployed separately, not via git history)
+wp-content/uploads/
+
+# Backups (All-in-One WP Migration)
+wp-content/ai1wm-backups/*
+!wp-content/ai1wm-backups/.htaccess
+!wp-content/ai1wm-backups/index.html
+!wp-content/ai1wm-backups/index.php
+!wp-content/ai1wm-backups/web.config
+
+# Cache / upgrade artifacts
+wp-content/cache/
+wp-content/upgrade/
+wp-content/upgrade-temp-backup/
+
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+*.log

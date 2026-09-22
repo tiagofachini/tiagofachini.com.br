@@ -1,0 +1,16 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "vscf/vscf-block",
+	"version": "1.0",
+	"title": "VS Contact Form",
+	"category": "text",
+	"icon": "email",
+	"textdomain": "very-simple-contact-form",
+	"attributes": {
+		"shortcodeSettings": {
+			"type": "string"
+		}
+	},
+	"editorScript": "file:./index.js"
+}

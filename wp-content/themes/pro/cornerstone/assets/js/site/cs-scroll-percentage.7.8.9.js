@@ -1,0 +1,1 @@
+(()=>{var{onScroll:n,onLoad:l,setRootVar:c}=window.csGlobal.rivet.util;l(t);n(t);function t(){let e=0;window.scrollMaxY?e=window.scrollY/window.scrollMaxY:e=i(document.body),e=Math.min(1,e),c("--x-body-scroll-percentage",e.toFixed(4))}function i(e){let o=document.documentElement.getBoundingClientRect();return-o.top/(o.height-window.innerHeight)}})();

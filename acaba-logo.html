@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Contador Regressivo – Turma 104 10º AN</title>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      color: #ffffff;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      overflow: hidden;
+      position: relative;
+      background: linear-gradient(270deg, #ff6b6b, #4ecdc4, #ff9f1c, #2a9d8f, #e63946, #457b9d);
+      background-size: 600% 600%;
+      animation: gradientMove 60s ease infinite;
+    }
+
+    body::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.45);
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    @keyframes gradientMove {
+      0%   { background-position: 0% 50%; }
+      25%  { background-position: 50% 50%; }
+      50%  { background-position: 100% 50%; }
+      75%  { background-position: 50% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .container {
+      position: relative;
+      z-index: 5;
+      max-width: 95%;
+      padding: 40px 20px;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      margin: 0 0 25px;
+      font-weight: bold;
+      text-shadow: 0 3px 15px rgba(0,0,0,0.8);
+    }
+
+    #diasUteis {
+      font-size: 10rem;
+      font-weight: 900;
+      margin: 0 0 8px;
+      line-height: 0.85;
+      text-shadow: 0 6px 40px rgba(0,0,0,0.9);
+      letter-spacing: -2px;
+    }
+
+    #labelDias {
+      font-size: 2.4rem;
+      margin: 0 0 30px;
+      font-weight: 600;
+      opacity: 0.95;
+      text-shadow: 0 2px 12px rgba(0,0,0,0.7);
+    }
+
+    #tempoDetalhado {
+      font-size: 3.6rem;
+      font-weight: 700;
+      margin: 15px 0 5px;
+      letter-spacing: 6px;
+      text-shadow: 0 4px 25px rgba(0,0,0,0.85);
+    }
+
+    #labelTempo {
+      font-size: 1.6rem;
+      margin: 0 0 35px;
+      opacity: 0.88;
+    }
+
+    #mensagem {
+      font-size: 1.95rem;
+      min-height: 80px;
+      margin: 20px 0 60px;
+      text-shadow: 0 2px 15px rgba(0,0,0,0.9);
+      font-weight: 500;
+      transition: opacity 0.8s ease, transform 0.8s ease;
+    }
+
+    #mensagem.celebrar {
+      opacity: 1;
+      transform: scale(1.08);
+      font-weight: 700;
+      text-shadow: 0 0 25px rgba(255,255,255,0.6);
+    }
+
+    footer {
+      position: absolute;
+      bottom: 20px;
+      left: 0; right: 0;
+      font-size: 0.95rem;
+      opacity: 0.82;
+      text-shadow: 0 1px 10px black;
+      z-index: 5;
+    }
+
+    @media (max-width: 640px) {
+      h1              { font-size: 2rem; margin-bottom: 18px; }
+      #diasUteis      { font-size: 7rem; }
+      #labelDias      { font-size: 2rem; margin-bottom: 25px; }
+      #tempoDetalhado { font-size: 2.8rem; letter-spacing: 4px; }
+      #labelTempo     { font-size: 1.3rem; margin-bottom: 30px; }
+      #mensagem       { font-size: 1.6rem; margin: 15px 0 50px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>Contador Regressivo<br>Final das Aulas<br>Turma 104 10º AN</h1>
+
+    <div id="diasUteis">--</div>
+    <div id="labelDias">dias úteis restantes</div>
+
+    <div id="tempoDetalhado">-- : -- : --</div>
+    <div id="labelTempo">horas : minutos : segundos</div>
+
+    <div id="mensagem">calculando...</div>
+  </div>
+
+  <footer>Baseado no Calendário Acadêmico Univille 2026 • Término: 07/11/2026 às 23:59 (horário de Brasília)</footer>
+
+  <script>
+    const DATA_ALVO = new Date('2026-11-07T23:59:59-03:00');
+
+    const feriados = [
+      '2026-01-01','2026-02-16','2026-02-17','2026-04-03','2026-04-05',
+      '2026-04-21','2026-05-01','2026-06-04','2026-07-09','2026-09-07',
+      '2026-10-12','2026-11-02','2026-11-15','2026-11-20','2026-12-25',
+      '2026-03-09','2026-04-04',
+      '2026-06-13','2026-06-14','2026-06-15','2026-06-16','2026-06-17','2026-06-18','2026-06-19'
+    ].map(d => new Date(d + 'T00:00:00-03:00').toDateString());
+
+    function isDiaUtil(data) {
+      const ds = data.getDay();
+      return ds !== 0 && ds !== 6 && !feriados.includes(data.toDateString());
+    }
+
+    function contarDiasUteisRestantes() {
+      const hoje = new Date();
+      hoje.setHours(0,0,0,0);
+      const alvo = new Date(DATA_ALVO);
+      alvo.setHours(0,0,0,0);
+      if (hoje >= alvo) return 0;
+
+      let count = 0;
+      let atual = new Date(hoje);
+      while (atual < alvo) {
+        atual.setDate(atual.getDate() + 1);
+        if (isDiaUtil(atual)) count++;
+      }
+      return count;
+    }
+
+    function contarDiasCorridosRestantes() {
+      const agora = new Date();
+      const deltaMs = DATA_ALVO - agora;
+      if (deltaMs <= 0) return 0;
+      return Math.floor(deltaMs / 86400000) + 1; // +1 para incluir o dia final
+    }
+
+    let ultimaContagemDiasUteis = contarDiasUteisRestantes();
+
+    function deveCelebrarVirada() {
+      const agora = new Date();
+      if (agora.getHours() !== 22) return false;
+      const hojeStr = agora.toDateString();
+      const ultima = localStorage.getItem('ultimaVirada') || '';
+      if (ultima !== hojeStr) {
+        localStorage.setItem('ultimaVirada', hojeStr);
+        return true;
+      }
+      return false;
+    }
+
+    function atualizarContador() {
+      const agora = new Date();
+      const deltaMs = DATA_ALVO - agora;
+
+      if (deltaMs <= 0) {
+        document.getElementById('diasUteis').textContent = "0";
+        document.getElementById('tempoDetalhado').textContent = "00 : 00 : 00";
+        document.getElementById('mensagem').innerHTML = "ACABOU! Boas férias, Turma 104! 🥳🎓";
+        lancarFogosProlongados();
+        setInterval(lancarConfetes, 700);
+        return;
+      }
+
+      // Tempo detalhado
+      const horas = Math.floor((deltaMs % 86400000) / 3600000);
+      const minutos = Math.floor((deltaMs % 3600000) / 60000);
+      const segundos = Math.floor((deltaMs % 60000) / 1000);
+      document.getElementById('tempoDetalhado').textContent =
+        `${horas.toString().padStart(2,'0')} : ${minutos.toString().padStart(2,'0')} : ${segundos.toString().padStart(2,'0')}`;
+
+      // Dias úteis (principal)
+      const diasUteisAgora = contarDiasUteisRestantes();
+      document.getElementById('diasUteis').textContent = diasUteisAgora;
+
+      // Comparativo na mensagem inferior
+      const diasCorridos = contarDiasCorridosRestantes();
+      document.getElementById('mensagem').textContent =
+        `${diasUteisAgora} dias úteis vs. ${diasCorridos} dias corridos restantes`;
+
+      // Celebração na diminuição de dia útil
+      if (diasUteisAgora < ultimaContagemDiasUteis || deveCelebrarVirada()) {
+        ultimaContagemDiasUteis = diasUteisAgora;
+        celebrarDiminuicaoDia(diasUteisAgora, diasCorridos);
+      }
+    }
+
+    function celebrarDiminuicaoDia(diasUteis, diasCorridos) {
+      const msgEl = document.getElementById('mensagem');
+      msgEl.classList.add('celebrar');
+      msgEl.innerHTML = "Menos um dia útil! Estamos mais perto! 🎉✨";
+
+      lancarConfetes();
+
+      setTimeout(() => {
+        msgEl.classList.remove('celebrar');
+        msgEl.textContent = `${diasUteis} dias úteis vs. ${diasCorridos} dias corridos restantes`;
+      }, 7000);
+    }
+
+    function lancarConfetes() {
+      const dur = 6000;
+      const end = Date.now() + dur;
+      (function anim() {
+        confetti({ particleCount: 9, angle: 60, spread: 75, origin: { x: 0 } });
+        confetti({ particleCount: 9, angle: 120, spread: 75, origin: { x: 1 } });
+        if (Date.now() < end) requestAnimationFrame(anim);
+      })();
+    }
+
+    function lancarFogosProlongados() {
+      const dur = 16000;
+      const end = Date.now() + dur;
+      const interval = setInterval(() => {
+        if (Date.now() > end) return clearInterval(interval);
+        const count = 55 * ((end - Date.now()) / dur);
+        confetti({
+          particleCount: count,
+          spread: 110,
+          startVelocity: 50,
+          ticks: 120,
+          origin: { x: Math.random(), y: Math.random() - 0.2 }
+        });
+      }, 160);
+    }
+
+    atualizarContador();
+    setInterval(atualizarContador, 1000);
+  </script>
+
+</body>
+</html>
