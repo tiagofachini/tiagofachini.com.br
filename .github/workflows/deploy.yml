@@ -1,0 +1,30 @@
+name: Deploy to Hostinger
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Deploy via rsync over SSH
+        uses: easingthemes/ssh-deploy@v5
+        with:
+          SSH_PRIVATE_KEY: ${{ secrets.DEPLOY_SSH_PRIVATE_KEY }}
+          REMOTE_HOST: ${{ secrets.DEPLOY_HOST }}
+          REMOTE_USER: ${{ secrets.DEPLOY_USER }}
+          REMOTE_PORT: ${{ secrets.DEPLOY_PORT }}
+          SOURCE: "./"
+          TARGET: ${{ secrets.DEPLOY_PATH }}
+          # No --delete: files removed from the repo stay on the server.
+          # Turn on --delete-after later only once you trust the exclude list below.
+          ARGS: "-rlztv --progress"
+          EXCLUDE: >-
+            .git*, .github/, wp-config.php, wp-content/uploads/,
+            wp-content/ai1wm-backups/, wp-content/cache/,
+            wp-content/upgrade/, wp-content/upgrade-temp-backup/
